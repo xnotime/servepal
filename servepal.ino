@@ -42,22 +42,10 @@ void setup() {
   Serial.println("R");
 }
 
+bool wasTimedOut = true;
+
 void loop() {
-  Serial.print(millis());
-  Serial.print(" >= ");
-  Serial.print(lastCommandTime);
-  Serial.print(" + ");
-  Serial.println(MIN_COMMAND_TIME);
-  if (millis() >= (lastCommandTime + MIN_COMMAND_TIME)) {
-    lc.setRow(0, 0, 0b10000001);
-    lc.setRow(0, 1, 0b01000010);
-    lc.setRow(0, 2, 0b00100100);
-    lc.setRow(0, 3, 0b00011000);
-    lc.setRow(0, 4, 0b00011000);
-    lc.setRow(0, 5, 0b00100100);
-    lc.setRow(0, 6, 0b01000010);
-    lc.setRow(0, 7, 0b10000001);
-  }
+  checkTimeouts();
   bool expectCommand = true;
   char commandName = 0;
   char commandArg = 0;
@@ -76,10 +64,36 @@ void loop() {
   }
 }
 
+void checkTimeouts() {
+  Serial.print(millis());
+  Serial.print(" >= ");
+  Serial.print(lastCommandTime);
+  Serial.print(" + ");
+  Serial.println(MIN_COMMAND_TIME);
+  if (millis() >= (lastCommandTime + MIN_COMMAND_TIME)) {
+    lc.setRow(0, 0, 0b10000001);
+    lc.setRow(0, 1, 0b01000010);
+    lc.setRow(0, 2, 0b00100100);
+    lc.setRow(0, 3, 0b00011000);
+    lc.setRow(0, 4, 0b00011000);
+    lc.setRow(0, 5, 0b00100100);
+    lc.setRow(0, 6, 0b01000010);
+    lc.setRow(0, 7, 0b10000001);
+    wasTimedOut = true;
+  } else if (wasTimedOut) {
+    lc.clearDisplay(0);
+    wasTimedOut = false;
+  }
+}
+
 int currentRow = 0;
 
 void enactCommand(char name, char arg) {
+  lastCommandTime = millis();
+  Serial.println("y");
   switch (name) {
+    case 'w':
+      return;
     case 'f':
       analogWrite(FAN_PWM_PIN, (int)arg);
       return;
@@ -96,5 +110,4 @@ void enactCommand(char name, char arg) {
       lc.setIntensity(0, (int)arg);
       return;
   }
-  lastCommandTime = millis();
 }
