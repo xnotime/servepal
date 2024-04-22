@@ -15,6 +15,10 @@ unsigned long delaytime=5;
 
 const int FAN_PWM_PIN = 6;
 
+const int MIN_COMMAND_TIME = 5000;
+
+long lastCommandTime = -MIN_COMMAND_TIME;
+
 void setup() {
   // serial stuffs
   Serial.begin(115200);
@@ -39,6 +43,21 @@ void setup() {
 }
 
 void loop() {
+  Serial.print(millis());
+  Serial.print(" >= ");
+  Serial.print(lastCommandTime);
+  Serial.print(" + ");
+  Serial.println(MIN_COMMAND_TIME);
+  if (millis() >= (lastCommandTime + MIN_COMMAND_TIME)) {
+    lc.setRow(0, 0, 0b10000001);
+    lc.setRow(0, 1, 0b01000010);
+    lc.setRow(0, 2, 0b00100100);
+    lc.setRow(0, 3, 0b00011000);
+    lc.setRow(0, 4, 0b00011000);
+    lc.setRow(0, 5, 0b00100100);
+    lc.setRow(0, 6, 0b01000010);
+    lc.setRow(0, 7, 0b10000001);
+  }
   bool expectCommand = true;
   char commandName = 0;
   char commandArg = 0;
@@ -77,4 +96,5 @@ void enactCommand(char name, char arg) {
       lc.setIntensity(0, (int)arg);
       return;
   }
+  lastCommandTime = millis();
 }
