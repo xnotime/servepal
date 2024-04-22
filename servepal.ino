@@ -15,7 +15,7 @@ unsigned long delaytime=5;
 
 const int FAN_PWM_PIN = 6;
 
-const int MIN_COMMAND_TIME = 5000;
+const int MIN_COMMAND_TIME = 10000;
 
 long lastCommandTime = -MIN_COMMAND_TIME;
 
